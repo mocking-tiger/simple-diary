@@ -12,12 +12,11 @@ function App() {
     const list = await res.json();
     const item = list.slice(0, 20).map((it) => {
       return {
-        key: it.id++,
         author: it.email,
         content: it.body,
         emotion: Math.floor(Math.random() * 5) + 1,
         created_date: new Date().getTime(),
-        id: it.id,
+        id: dataId.current++,
       };
     });
     setData(item);
