@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 const DiaryItem = ({
   author,
@@ -40,6 +40,10 @@ const DiaryItem = ({
     }
   };
 
+  useEffect(() => {
+    console.log(`${id}번째 아이템 렌더`);
+  });
+
   return (
     <div className="DiaryItem">
       <div className="info">
@@ -77,4 +81,4 @@ const DiaryItem = ({
   );
 };
 
-export default DiaryItem;
+export default React.memo(DiaryItem);
