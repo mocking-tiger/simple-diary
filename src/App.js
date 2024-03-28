@@ -1,10 +1,37 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case "INIT": {
+      return action.data;
+    }
+    case "CREATE": {
+      const created_date = new Date().getTime();
+      const newItem = {
+        ...action.data,
+        created_date,
+      };
+      return [newItem, ...state];
+    }
+    case "REMOVE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    case "EDIT": {
+      return state.map((it) =>
+        it.id === action.targetId ? { ...it, content: action.newContent } : it
+      );
+    }
+    default:
+      return state;
+  }
+};
+
 function App() {
-  const [data, setData] = useState([]);
+  //const [data, setData] = useState([]);
+  const [data, dispatch] = useReducer(reducer, []);
   const dataId = useRef(0);
   const getData = async () => {
     const res = await fetch(
@@ -20,7 +47,9 @@ function App() {
         id: dataId.current++,
       };
     });
-    setData(initData);
+
+    dispatch({ type: "INIT", data: initData });
+    //setData(initData);
   };
 
   useEffect(() => {
@@ -28,28 +57,27 @@ function App() {
   }, []);
 
   const onCreate = useCallback((author, content, emotion) => {
+    dispatch({
+      type: "CREATE",
+      data: { author, content, emotion, id: dataId.current },
+    });
     const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dataId.current,
-    };
     dataId.current += 1;
-    setData((data) => [newItem, ...data]);
+    //setData((data) => [newItem, ...data]);
   }, []);
 
   const onRemove = useCallback((targetId) => {
-    setData((data) => data.filter((it) => it.id !== targetId));
+    dispatch({ type: "REMOVE", targetId });
+    //setData((data) => data.filter((it) => it.id !== targetId));
   }, []);
 
   const onEdit = useCallback((targetId, newContent) => {
-    setData((data) =>
-      data.map((it) =>
-        it.id === targetId ? { ...it, content: newContent } : it
-      )
-    );
+    dispatch({ type: "EDIT", targetId, newContent });
+    // setData((data) =>
+    //   data.map((it) =>
+    //     it.id === targetId ? { ...it, content: newContent } : it
+    //   )
+    // );
   }, []);
 
   const getDiaryAnalysis = useMemo(() => {
