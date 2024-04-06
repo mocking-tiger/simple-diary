@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from "react";
 import "./App.css";
 import DiaryEditor from "./DiaryEditor";
 import DiaryList from "./DiaryList";
@@ -29,8 +35,10 @@ const reducer = (state, action) => {
   }
 };
 
-function App() {
-  //const [data, setData] = useState([]);
+export const DiaryStateContext = React.createContext();
+export const DiaryDispatchContext = React.createContext();
+
+const App = () => {
   const [data, dispatch] = useReducer(reducer, []);
   const dataId = useRef(0);
   const getData = async () => {
@@ -61,7 +69,7 @@ function App() {
       type: "CREATE",
       data: { author, content, emotion, id: dataId.current },
     });
-    const created_date = new Date().getTime();
+    //const created_date = new Date().getTime();
     dataId.current += 1;
     //setData((data) => [newItem, ...data]);
   }, []);
@@ -80,25 +88,33 @@ function App() {
     // );
   }, []);
 
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onRemove, onEdit };
+  }, [onCreate, onRemove, onEdit]);
+
   const getDiaryAnalysis = useMemo(() => {
     const goodCount = data.filter((it) => it.emotion >= 3).length;
     const badCount = data.length - goodCount;
     const goodRatio = (goodCount / data.length) * 100;
     return { goodCount, badCount, goodRatio };
-  }, [data.length]);
+  }, [data]);
 
   const { goodCount, badCount, goodRatio } = getDiaryAnalysis;
 
   return (
-    <div className="App">
-      <DiaryEditor onCreate={onCreate} />
-      <div>全ての日記 {data.length}</div>
-      <div>気持ち良い日記{goodCount}</div>
-      <div>気持ち悪い日記{badCount}</div>
-      <div>気持ち良い日記の比率{goodRatio}%</div>
-      <DiaryList onRemove={onRemove} diaryList={data} onEdit={onEdit} />
-    </div>
+    <DiaryStateContext.Provider value={data}>
+      <DiaryDispatchContext.Provider value={memoizedDispatches}>
+        <div className="App">
+          <DiaryEditor />
+          <div>全ての日記 {data.length}</div>
+          <div>気持ち良い日記{goodCount}</div>
+          <div>気持ち悪い日記{badCount}</div>
+          <div>気持ち良い日記の比率{goodRatio}%</div>
+          <DiaryList />
+        </div>
+      </DiaryDispatchContext.Provider>
+    </DiaryStateContext.Provider>
   );
-}
+};
 
 export default App;

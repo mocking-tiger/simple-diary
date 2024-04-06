@@ -1,6 +1,8 @@
-import React, { useEffect, useState, useRef, useReducer } from "react";
+import React, { useState, useRef, useContext } from "react";
+import { DiaryDispatchContext } from "./App";
 
-const DiaryEditor = ({ onCreate }) => {
+const DiaryEditor = () => {
+  const { onCreate } = useContext(DiaryDispatchContext);
   const authorInput = useRef();
   const contentInput = useRef();
   const [state, setState] = useState({
@@ -28,7 +30,7 @@ const DiaryEditor = ({ onCreate }) => {
       return;
     }
     onCreate(state.author, state.content, state.emotion);
-    alert("貯蔵成功");
+    alert("登録成功");
     setState({
       author: "",
       content: "",
@@ -70,7 +72,7 @@ const DiaryEditor = ({ onCreate }) => {
         </select>
       </div>
       <div>
-        <button onClick={handleSubmit}>日記貯蔵</button>
+        <button onClick={handleSubmit}>日記登録</button>
       </div>
     </div>
   );
